@@ -6,8 +6,4 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-export default defineConfig({
-  ssr: {
-    external: ["@cloudflare/vite-plugin"]
-  }
-});
+export default defineConfig();

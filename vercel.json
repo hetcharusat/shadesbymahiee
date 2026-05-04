@@ -3,16 +3,5 @@
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
   "framework": "vite",
-  "nodeVersion": "20.x",
-  "env": {},
-  "envPrefix": "VITE_",
-  "git": {
-    "deploymentEnabled": true
-  },
-  "redirects": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    }
-  ]
+  "envPrefix": "VITE_"
 }

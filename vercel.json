@@ -1,14 +1,5 @@
 ﻿{
-  "version": 2,
-  "functions": {
-    "api/server.js": {
-      "runtime": "nodejs20.x",
-      "includeFiles": "dist/**"
-    }
-  },
-  "routes": [
-    { "src": "^/_assets/(.*)", "dest": "/dist/client/_assets/$1" },
-    { "src": "^/assets/(.*)", "dest": "/dist/client/assets/$1" },
-    { "src": "^/(.*)", "dest": "/api/server" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

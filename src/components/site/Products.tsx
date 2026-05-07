@@ -3,19 +3,24 @@ import krishna from "@/assets/product-krishna.jpg";
 import ganesh from "@/assets/product-ganesh.jpg";
 import clock from "@/assets/product-clock.jpg";
 import nameplate from "@/assets/product-nameplate.jpg";
-import earrings from "@/assets/product-earrings.jpg";
+import earrings from "@/assets/product-heartframe.jpg";
 import mandala from "@/assets/product-mandala.jpg";
+import sunart from "@/assets/product-sunart.jpg";
+import namah from "@/assets/product-shiv.jpg";
+import shiva from "@/assets/product-shiva2.jpg";
 import { Heart } from "lucide-react";
 
 const products = [
-  { img: swastik, name: "Swastik Wall Art", price: 899, tag: "Bestseller" },
-  { img: krishna, name: "Krishna Peacock Frame", price: 1499, tag: "New" },
-  { img: ganesh, name: "Ganesh Painting", price: 1299 },
-  { img: clock, name: "Floral Handmade Clock", price: 1199 },
-  { img: nameplate, name: "Custom Nameplate", price: 699, tag: "Custom" },
-  { img: mandala, name: "Golden Mandala", price: 999 },
-  { img: earrings, name: "Jhumka Earrings", price: 449 },
-  { img: krishna, name: "Mini Krishna Frame", price: 599 },
+  { img: swastik, name: "Swastik Wall Art", price: 599, tag: "Bestseller" },
+  { img: krishna, name: "Krishna Peacock Frame", price: 599, tag: "New" },
+  { img: ganesh, name: "Ganesh Painting", price: 599 },
+  { img: clock, name: "Floral Handmade Clock", price: 499 },
+  { img: nameplate, name: "Custom Nameplate", price: 599, tag: "Custom" },
+  { img: mandala, name: "Golden Mandala", price: 599 },
+  { img: earrings, name: "Heart Frame", price: 449 },
+  { img: sunart, name: "Sun Art", price: 599 },
+  { img: namah, name: "NAMAH", price: 599 },
+  { img: shiva, name: "Shiva Lingam", price: 599 },
 ];
 
 export function Products() {

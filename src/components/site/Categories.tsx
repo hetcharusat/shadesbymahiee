@@ -1,6 +1,6 @@
 import religious from "@/assets/cat-religious.jpg";
 import decor from "@/assets/cat-decor.jpg";
-import custom from "@/assets/cat-custom.jpg";
+import custom from "@/assets/product-heartframe.jpg";
 
 const cats = [
   { img: religious, title: "Religious Art", desc: "Krishna, Ganesh, Swastik & more" },

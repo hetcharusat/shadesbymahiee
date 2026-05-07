@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
+import dp from "@/assets/dp.jpg";
 
 const links = [
   { href: "#categories", label: "Shop" },
@@ -27,11 +28,16 @@ export function Navbar() {
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10">
         <a href="#top" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full gradient-warm text-primary-foreground font-serif text-lg shadow-soft">
-            M
-          </span>
+          <img
+            src={dp}
+            alt="Logo"
+            width={40}
+            height={40}
+            className="rounded-full object-cover shadow-soft"
+            style={{ minWidth: 40, minHeight: 40 }}
+          />
           <span className="font-serif text-xl font-semibold text-foreground">
-            Shadesby <span className="text-gradient-warm">mahie</span>
+            Shadesby <span className="text-gradient-warm">Mahie</span>
           </span>
         </a>
 

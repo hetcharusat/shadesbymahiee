@@ -14,7 +14,7 @@ export function About() {
 
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {[
-            { n: "500+", l: "Happy homes" },
+            { n: "50+", l: "Happy homes" },
             { n: "100%", l: "Handmade" },
             { n: "5★", l: "Loved by you" },
           ].map((s) => (

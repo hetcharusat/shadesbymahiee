@@ -46,7 +46,7 @@ export function Hero() {
           </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted-foreground md:justify-start">
-            <span>✦ 500+ happy customers</span>
+            <span>✦ 50+ happy customers</span>
             <span>✦ Made to order</span>
             <span>✦ Pan-India shipping</span>
           </div>

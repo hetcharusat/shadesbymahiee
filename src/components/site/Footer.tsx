@@ -18,7 +18,7 @@ export function Footer() {
           </p>
           <div className="mt-5 flex gap-3">
             <a
-              href="https://instagram.com"
+              href="https://instagram.com/shadesby.mahie"
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"
@@ -60,7 +60,7 @@ export function Footer() {
           <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 text-primary" />
-              <span>India · Ships pan-India</span>
+              <span>Anand,India </span>
             </li>
             <li className="flex items-start gap-2">
               <Mail className="mt-0.5 h-4 w-4 text-primary" />
@@ -75,7 +75,7 @@ export function Footer() {
       </div>
 
       <div className="mx-auto mt-10 max-w-7xl border-t border-border pt-6 text-center text-xs text-muted-foreground">
-        © 2026 Shadesbymahie · Made with ♥ by hand
+        © 2026 Shadesbymahie · THANKS FOR VISITING! FOLLOW US ON INSTAGRAM @shadesby.mahie
       </div>
     </footer>
   );

@@ -7,6 +7,9 @@ import { CustomOrder } from "@/components/site/CustomOrder";
 import { About } from "@/components/site/About";
 import { Footer } from "@/components/site/Footer";
 import { useReveal } from "@/hooks/use-reveal";
+import { CartProvider } from "@/contexts/CartContext";
+import { CartDrawer } from "@/components/site/CartDrawer";
+import { Toasts } from "@/components/site/Toasts";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -30,14 +33,18 @@ export const Route = createFileRoute("/")({
 function Index() {
   useReveal();
   return (
-    <main className="relative">
-      <Navbar />
-      <Hero />
-      <Categories />
-      <Products />
-      <CustomOrder />
-      <About />
-      <Footer />
-    </main>
+    <CartProvider>
+      <main className="relative">
+        <Navbar />
+        <Hero />
+        <Categories />
+        <Products />
+        <CustomOrder />
+        <About />
+        <Footer />
+        <CartDrawer />
+        <Toasts />
+      </main>
+    </CartProvider>
   );
 }

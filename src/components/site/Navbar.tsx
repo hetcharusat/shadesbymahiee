@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
 import dp from "@/assets/dp.jpg";
+import { useCart } from "@/contexts/CartContext";
 
 const links = [
   { href: "#categories", label: "Shop" },
@@ -12,6 +13,7 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { itemCount, openDrawer } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -51,19 +53,29 @@ export function Navbar() {
           ))}
         </ul>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <a
             href="#custom"
             className="hidden rounded-full gradient-warm px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-soft transition-transform hover:scale-105 md:inline-flex"
           >
             Order Now
           </a>
+
+          {/* Cart Button - Visible on all screen sizes */}
           <button
-            aria-label="Cart"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground transition-colors hover:bg-accent md:hidden"
+            onClick={openDrawer}
+            aria-label="Shopping cart"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-accent hover:scale-105"
+            title={`${itemCount} items in cart`}
           >
             <ShoppingBag className="h-4 w-4" strokeWidth={1.75} />
+            {itemCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full gradient-warm text-xs font-semibold text-primary-foreground shadow-soft animate-pulse">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
           </button>
+
           <button
             aria-label="Menu"
             onClick={() => setOpen((o) => !o)}

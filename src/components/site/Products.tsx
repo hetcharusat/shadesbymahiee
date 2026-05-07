@@ -8,22 +8,49 @@ import mandala from "@/assets/product-mandala.jpg";
 import sunart from "@/assets/product-sunart.jpg";
 import namah from "@/assets/product-shiv.jpg";
 import shiva from "@/assets/product-shiva2.jpg";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 const products = [
-  { img: swastik, name: "Swastik Wall Art", price: 599, tag: "Bestseller" },
-  { img: krishna, name: "Krishna Peacock Frame", price: 599, tag: "New" },
-  { img: ganesh, name: "Ganesh Painting", price: 599 },
-  { img: clock, name: "Floral Handmade Clock", price: 499 },
-  { img: nameplate, name: "Custom Nameplate", price: 599, tag: "Custom" },
-  { img: mandala, name: "Golden Mandala", price: 599 },
-  { img: earrings, name: "Heart Frame", price: 449 },
-  { img: sunart, name: "Sun Art", price: 599 },
-  { img: namah, name: "NAMAH", price: 599 },
-  { img: shiva, name: "Shiva Lingam", price: 599 },
+  { id: "swastik", img: swastik, name: "Swastik Wall Art", price: 599, tag: "Bestseller" },
+  { id: "krishna", img: krishna, name: "Krishna Peacock Frame", price: 599, tag: "New" },
+  { id: "ganesh", img: ganesh, name: "Ganesh Painting", price: 599 },
+  { id: "clock", img: clock, name: "Floral Handmade Clock", price: 499 },
+  { id: "nameplate", img: nameplate, name: "Custom Nameplate", price: 599, tag: "Custom" },
+  { id: "mandala", img: mandala, name: "Golden Mandala", price: 599 },
+  { id: "earrings", img: earrings, name: "Heart Frame", price: 449 },
+  { id: "sunart", img: sunart, name: "Sun Art", price: 599 },
+  { id: "namah", img: namah, name: "NAMAH", price: 599 },
+  { id: "shiva", img: shiva, name: "Shiva Lingam", price: 599 },
 ];
 
 export function Products() {
+  const { addItem, openDrawer } = useCart();
+
+  const handleAddToCart = (product: typeof products[0]) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.img,
+    });
+    toast.success(`${product.name} added to cart!`, {
+      description: `₹${product.price.toLocaleString("en-IN")}`,
+    });
+  };
+
+  const handleBuyNow = (product: typeof products[0]) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.img,
+    });
+    openDrawer();
+    toast.success(`${product.name} added to cart!`);
+  };
+
   return (
     <section id="products" className="bg-secondary/40 px-5 py-16 md:px-10 md:py-24">
       <div className="mx-auto max-w-7xl">
@@ -38,7 +65,7 @@ export function Products() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
           {products.map((p, i) => (
             <article
-              key={p.name + i}
+              key={p.id}
               className="reveal group flex flex-col overflow-hidden rounded-2xl bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-soft"
               style={{ transitionDelay: `${(i % 4) * 60}ms` }}
             >
@@ -69,11 +96,18 @@ export function Products() {
                 </h3>
                 <p className="text-sm font-medium text-primary">₹{p.price.toLocaleString("en-IN")}</p>
                 <div className="mt-3 flex gap-2">
-                  <button className="flex-1 rounded-full gradient-warm px-3 py-2 text-xs font-medium text-primary-foreground shadow-soft transition-transform hover:scale-[1.03]">
+                  <button
+                    onClick={() => handleBuyNow(p)}
+                    className="flex-1 rounded-full gradient-warm px-3 py-2 text-xs font-medium text-primary-foreground shadow-soft transition-all hover:scale-[1.03] active:scale-[0.98]"
+                  >
                     Buy Now
                   </button>
-                  <button className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary">
-                    Details
+                  <button
+                    onClick={() => handleAddToCart(p)}
+                    className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-all hover:border-primary hover:text-primary hover:scale-[1.03] active:scale-[0.98]"
+                    title="Add to Cart"
+                  >
+                    <ShoppingBag className="h-4 w-4" strokeWidth={1.75} />
                   </button>
                 </div>
               </div>

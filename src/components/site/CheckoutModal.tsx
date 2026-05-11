@@ -8,6 +8,7 @@ import { Loader2, MapPin, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
+import { orderService } from "@/lib/supabase";
 import qrImage from "@/assets/qr.jpg"; // Fallback placeholder
 
 export interface CartItem {
@@ -133,6 +134,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     try {
       setIsLoading(true);
 
+      // Save to Firebase
       const ordersRef = collection(db, "orders");
       await addDoc(ordersRef, {
         userId: userId,
@@ -160,6 +162,29 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         createdAt: new Date(),
         trackingId: `ORD-${Date.now()}`,
         paymentProof: selectedPayment === "online" ? "Screenshot uploaded" : null,
+      });
+
+      // Also save to Supabase for admin dashboard
+      await orderService.createOrder({
+        user_id: userId,
+        user_email: savedAddress.email,
+        user_name: savedAddress.fullName,
+        user_phone: savedAddress.phone,
+        house_no: savedAddress.houseNo,
+        street: savedAddress.street,
+        landmark: savedAddress.landmark || "",
+        city: savedAddress.city,
+        state: savedAddress.state,
+        pincode: savedAddress.pincode,
+        items: cartItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        total: totalPrice,
+        payment_method: selectedPayment,
       });
 
       toast({

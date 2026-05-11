@@ -83,6 +83,13 @@ export function Navbar({ onOrderHistoryClick }: NavbarProps) {
             title={`${itemCount} items in cart`}
           >
             <ShoppingBag className="h-4 w-4" strokeWidth={1.75} />
+            {itemCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full gradient-warm text-xs font-semibold text-primary-foreground shadow-soft animate-pulse">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
+          </button>
+
           {/* Profile Dropdown - Only visible when logged in */}
           {user && (
             <DropdownMenu>
@@ -129,13 +136,6 @@ export function Navbar({ onOrderHistoryClick }: NavbarProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-            {itemCount > 0 && (
-              <span className="absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full gradient-warm text-xs font-semibold text-primary-foreground shadow-soft animate-pulse">
-                {itemCount > 99 ? "99+" : itemCount}
-              </span>
-            )}
-          </button>
 
           <button
             aria-label="Menu"

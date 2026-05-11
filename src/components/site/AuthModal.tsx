@@ -29,6 +29,7 @@ export const AuthModal: React.FC = () => {
         title: "Welcome!",
         description: "Logged in successfully with Google",
       });
+      setIsAuthModalOpen(false); // Close modal after login
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -59,6 +60,7 @@ export const AuthModal: React.FC = () => {
         title: "Welcome back!",
         description: "Logged in successfully",
       });
+      setIsAuthModalOpen(false); // Close modal after login
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -107,6 +109,7 @@ export const AuthModal: React.FC = () => {
         title: "Account Created!",
         description: "Welcome to Shades by Mahie",
       });
+      setIsAuthModalOpen(false); // Close modal after signup
     } catch (error: any) {
       toast({
         title: "Signup Failed",

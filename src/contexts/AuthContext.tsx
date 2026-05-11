@@ -148,6 +148,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       await signOut(auth);
       setUserProfile(null);
+      setUser(null);
+      // Reload page to clear all states
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     } catch (error) {
       console.error("Logout error:", error);
       throw error;

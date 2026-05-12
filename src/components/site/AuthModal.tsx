@@ -151,6 +151,7 @@ export const AuthModal: React.FC = () => {
           <TabsContent value="login" className="space-y-4 mt-6">
             {/* Google Button */}
             <button
+              type="button"
               onClick={handleGoogleLogin}
               disabled={isLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-amber-300 rounded-xl hover:border-amber-500 hover:bg-amber-100 transition-all duration-300 font-medium text-amber-900 disabled:opacity-50"
@@ -219,6 +220,7 @@ export const AuthModal: React.FC = () => {
           <TabsContent value="signup" className="space-y-4 mt-6">
             {/* Google Button */}
             <button
+              type="button"
               onClick={handleGoogleLogin}
               disabled={isLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-amber-300 rounded-xl hover:border-amber-500 hover:bg-amber-100 transition-all duration-300 font-medium text-amber-900 disabled:opacity-50"

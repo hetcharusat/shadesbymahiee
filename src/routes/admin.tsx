@@ -1,10 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { AuthProvider } from '@/contexts/AuthContext'
 import { AdminDashboard } from '@/components/site/AdminDashboard'
-
-export const Route = createFileRoute('/admin')({
-  component: AdminPage,
-})
+import { AuthProvider } from '@/contexts/AuthContext'
 
 function AdminPage() {
   return (
@@ -13,3 +9,10 @@ function AdminPage() {
     </AuthProvider>
   )
 }
+
+export const Route = createFileRoute('/admin')({
+  component: AdminPage,
+  head: () => ({
+    meta: [{ title: 'Admin Dashboard — ShadesByMahiee' }],
+  }),
+})

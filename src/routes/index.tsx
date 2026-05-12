@@ -10,10 +10,9 @@ import { Footer } from "@/components/site/Footer";
 import { useReveal } from "@/hooks/use-reveal";
 import { CartProvider, useCart } from "@/contexts/CartContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { CartDrawer } from "@/components/site/CartDrawer";
+import { CheckoutDrawer } from "@/components/site/CheckoutDrawer";
 import { Toasts } from "@/components/site/Toasts";
 import { AuthModal } from "@/components/site/AuthModal";
-import { CheckoutModal } from "@/components/site/CheckoutModal";
 import { OrderSuccessAnimation } from "@/components/site/OrderSuccessAnimation";
 import { OrderHistory } from "@/components/site/OrderHistory";
 
@@ -79,20 +78,11 @@ function IndexContent() {
       <CustomOrder />
       <About />
       <Footer />
-      <CartDrawer onCheckoutClick={() => setIsCheckoutOpen(true)} />
+      <CheckoutDrawer onSuccess={handleCheckoutSuccess} />
       <Toasts />
 
       {/* Modals */}
       <AuthModal />
-      <CheckoutModal 
-        isOpen={isCheckoutOpen} 
-        onClose={handleCheckoutClose} 
-        onSuccess={handleCheckoutSuccess}
-        cartItems={cart.items}
-        totalPrice={getTotalPrice()}
-        userEmail={user?.email || ""}
-        userId={user?.uid || ""}
-      />
       <OrderHistory isOpen={isOrderHistoryOpen} onClose={() => setIsOrderHistoryOpen(false)} />
       <OrderSuccessAnimation isOpen={isOrderSuccessOpen} onClose={handleOrderSuccessClose} />
     </main>

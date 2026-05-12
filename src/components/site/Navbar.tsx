@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AccountModal } from "./AccountModal";
 
 interface NavbarProps {
   onOrderHistoryClick?: () => void;
@@ -19,8 +20,9 @@ interface NavbarProps {
 export function Navbar({ onOrderHistoryClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const { itemCount, openDrawer } = useCart();
-  const { user, userProfile, logout } = useAuth();
+  const { user, userProfile, logout, setIsAuthModalOpen } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -90,6 +92,16 @@ export function Navbar({ onOrderHistoryClick }: NavbarProps) {
             )}
           </button>
 
+          {/* Login Button - Visible when NOT logged in */}
+          {!user && (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="inline-flex h-10 items-center justify-center rounded-full bg-amber-800 px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-amber-900"
+            >
+              Log In
+            </button>
+          )}
+
           {/* Profile Dropdown - Only visible when logged in */}
           {user && (
             <DropdownMenu>
@@ -119,7 +131,7 @@ export function Navbar({ onOrderHistoryClick }: NavbarProps) {
                   <span>Order History</span>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem disabled className="cursor-pointer">
+                <DropdownMenuItem onClick={() => setIsAccountModalOpen(true)} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Account Details</span>
                 </DropdownMenuItem>
@@ -127,7 +139,10 @@ export function Navbar({ onOrderHistoryClick }: NavbarProps) {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  onClick={logout}
+                  onClick={() => {
+                    console.log("Logout button clicked");
+                    logout();
+                  }}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -173,6 +188,12 @@ export function Navbar({ onOrderHistoryClick }: NavbarProps) {
           </ul>
         </div>
       )}
+
+      {/* Account Details Modal */}
+      <AccountModal 
+        isOpen={isAccountModalOpen} 
+        onClose={() => setIsAccountModalOpen(false)} 
+      />
     </header>
   );
 }

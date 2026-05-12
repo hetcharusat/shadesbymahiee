@@ -4,7 +4,7 @@ export function Toasts() {
   return (
     <Toaster
       theme="light"
-      position="bottom-right"
+      position="top-center"
       richColors
       closeButton
       expand

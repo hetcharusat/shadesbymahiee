@@ -1,51 +1,46 @@
-import swastik from "@/assets/product-swastik.jpg";
-import krishna from "@/assets/product-krishna.jpg";
-import ganesh from "@/assets/product-ganesh.jpg";
-import clock from "@/assets/product-clock.jpg";
-import nameplate from "@/assets/product-nameplate.jpg";
-import earrings from "@/assets/product-heartframe.jpg";
-import mandala from "@/assets/product-mandala.jpg";
-import sunart from "@/assets/product-sunart.jpg";
-import namah from "@/assets/product-shiv.jpg";
-import shiva from "@/assets/product-shiva2.jpg";
-import { Heart, ShoppingBag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, ShoppingBag, Loader2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
-
-const products = [
-  { id: "swastik", img: swastik, name: "Swastik Wall Art", price: 599, tag: "Bestseller" },
-  { id: "krishna", img: krishna, name: "Krishna Peacock Frame", price: 599, tag: "New" },
-  { id: "ganesh", img: ganesh, name: "Ganesh Painting", price: 599 },
-  { id: "clock", img: clock, name: "Floral Handmade Clock", price: 499 },
-  { id: "nameplate", img: nameplate, name: "Custom Nameplate", price: 599, tag: "Custom" },
-  { id: "mandala", img: mandala, name: "Golden Mandala", price: 599 },
-  { id: "earrings", img: earrings, name: "Heart Frame", price: 449 },
-  { id: "sunart", img: sunart, name: "Sun Art", price: 599 },
-  { id: "namah", img: namah, name: "NAMAH", price: 599 },
-  { id: "shiva", img: shiva, name: "Shiva Lingam", price: 599 },
-];
+import { productService } from "@/lib/supabase";
 
 export function Products() {
   const { addItem, openDrawer } = useCart();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddToCart = (product: typeof products[0]) => {
+  useEffect(() => {
+    async function fetchStoreProducts() {
+      const res = await productService.getActiveProducts();
+      if (res.success) {
+        setProducts(res.data);
+      } else {
+        console.error("Products error:", res.error);
+        toast.error("Failed to load products: " + res.error);
+      }
+      setLoading(false);
+    }
+    fetchStoreProducts();
+  }, []);
+
+  const handleAddToCart = (product: any) => {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      image: product.img,
+      price: product.discount_price || product.price,
+      image: product.image_url,
     });
     toast.success(`${product.name} added to cart!`, {
-      description: `₹${product.price.toLocaleString("en-IN")}`,
+      description: `₹${(product.discount_price || product.price).toLocaleString("en-IN")}`,
     });
   };
 
-  const handleBuyNow = (product: typeof products[0]) => {
+  const handleBuyNow = (product: any) => {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      image: product.img,
+      price: product.discount_price || product.price,
+      image: product.image_url,
     });
     openDrawer();
     toast.success(`${product.name} added to cart!`);
@@ -62,58 +57,69 @@ export function Products() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-          {products.map((p, i) => (
-            <article
-              key={p.id}
-              className="reveal group flex flex-col overflow-hidden rounded-2xl bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-soft"
-              style={{ transitionDelay: `${(i % 4) * 60}ms` }}
-            >
-              <div className="relative aspect-square overflow-hidden bg-secondary">
-                <img
-                  src={p.img}
-                  alt={p.name}
-                  loading="lazy"
-                  width={1024}
-                  height={1024}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                {p.tag && (
-                  <span className="absolute left-3 top-3 rounded-full gradient-warm px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-soft">
-                    {p.tag}
-                  </span>
-                )}
-                <button
-                  aria-label="Save"
-                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/70 shadow-card transition-colors hover:text-primary"
-                >
-                  <Heart className="h-4 w-4" strokeWidth={1.75} />
-                </button>
-              </div>
-              <div className="flex flex-1 flex-col gap-1 p-4">
-                <h3 className="font-serif text-base font-semibold text-foreground md:text-lg">
-                  {p.name}
-                </h3>
-                <p className="text-sm font-medium text-primary">₹{p.price.toLocaleString("en-IN")}</p>
-                <div className="mt-3 flex gap-2">
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-amber-700" />
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-20 text-slate-500">
+            No products available at the moment. Please check back later.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+            {products.map((p, i) => (
+              <article
+                key={p.id}
+                className="group flex flex-col overflow-hidden rounded-2xl bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-soft animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both"
+                style={{ animationDelay: `${(i % 4) * 150}ms` }}
+              >
+                <div className="relative aspect-square overflow-hidden bg-secondary">
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  {p.tag && (
+                    <span className="absolute left-3 top-3 rounded-full gradient-warm px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-soft">
+                      {p.tag}
+                    </span>
+                  )}
                   <button
-                    onClick={() => handleBuyNow(p)}
-                    className="flex-1 rounded-full gradient-warm px-3 py-2 text-xs font-medium text-primary-foreground shadow-soft transition-all hover:scale-[1.03] active:scale-[0.98]"
+                    aria-label="Save"
+                    className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/70 shadow-card transition-colors hover:text-primary"
                   >
-                    Buy Now
-                  </button>
-                  <button
-                    onClick={() => handleAddToCart(p)}
-                    className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-all hover:border-primary hover:text-primary hover:scale-[1.03] active:scale-[0.98]"
-                    title="Add to Cart"
-                  >
-                    <ShoppingBag className="h-4 w-4" strokeWidth={1.75} />
+                    <Heart className="h-4 w-4" strokeWidth={1.75} />
                   </button>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="flex flex-1 flex-col gap-1 p-4">
+                  <h3 className="font-serif text-base font-semibold text-foreground md:text-lg line-clamp-1">
+                    {p.name}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-primary">₹{(p.discount_price || p.price).toLocaleString("en-IN")}</p>
+                    {p.discount_price && <p className="text-xs text-muted-foreground line-through">₹{p.price.toLocaleString("en-IN")}</p>}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => handleBuyNow(p)}
+                      className="flex-1 rounded-full gradient-warm px-3 py-2 text-xs font-medium text-primary-foreground shadow-soft transition-all hover:scale-[1.03] active:scale-[0.98]"
+                    >
+                      Buy Now
+                    </button>
+                    <button
+                      onClick={() => handleAddToCart(p)}
+                      className="rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-all hover:border-primary hover:text-primary hover:scale-[1.03] active:scale-[0.98]"
+                      title="Add to Cart"
+                    >
+                      <ShoppingBag className="h-4 w-4" strokeWidth={1.75} />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

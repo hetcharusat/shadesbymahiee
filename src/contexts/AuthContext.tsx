@@ -1,15 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import {
-  User,
-  signInWithPopup,
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { auth, db } from "../lib/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { supabase } from "../lib/supabase";
+import { Session, User } from "@supabase/supabase-js";
 
 interface UserProfile {
   uid: string;
@@ -17,6 +8,7 @@ interface UserProfile {
   displayName: string;
   photoURL?: string;
   phone?: string;
+  role?: string;
   addresses?: Address[];
 }
 
@@ -36,8 +28,10 @@ export interface Address {
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   userProfile: UserProfile | null;
   isLoading: boolean;
+  isInitialized: Promise<void>;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
   loginWithGoogle: () => Promise<void>;
@@ -49,65 +43,145 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+let resolveIsInitialized: () => void;
+const isInitialized = new Promise<void>((resolve) => {
+  resolveIsInitialized = resolve;
+});
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Listen to auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+    let isMounted = true;
 
-      if (currentUser) {
-        // Fetch user profile from Firestore
-        try {
-          const userDocRef = doc(db, "users", currentUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
+    // Safety timeout - if session check hangs for more than 5 seconds, force it to finish
+    const fallbackTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn("Auth check timed out. Forcing isLoading to false.");
+        setIsLoading(false);
+        if (resolveIsInitialized) resolveIsInitialized();
+      }
+    }, 5000);
 
-          if (userDocSnap.exists()) {
-            setUserProfile(userDocSnap.data() as UserProfile);
-          } else {
-            // Create profile if doesn't exist
-            const newProfile: UserProfile = {
-              uid: currentUser.uid,
-              email: currentUser.email || "",
-              displayName: currentUser.displayName || "User",
-              photoURL: currentUser.photoURL || undefined,
-            };
-            await setDoc(userDocRef, newProfile);
-            setUserProfile(newProfile);
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
+    // Check initial session
+    const checkSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (data.session && isMounted) {
+          setSession(data.session);
+          setUser(data.session.user);
+          // Fetch profile in the background without blocking app load
+          fetchUserProfile(data.session.user.id).catch(console.error);
         }
-      } else {
-        setUserProfile(null);
+      } catch (err) {
+        console.error("Error checking session:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+          clearTimeout(fallbackTimeout);
+          if (resolveIsInitialized) resolveIsInitialized();
+        }
+      }
+    };
+
+    checkSession();
+
+    // Listen to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        console.log("Auth state changed:", _event);
+        setSession(session);
+        
+        if (session?.user) {
+          setUser(session.user);
+          fetchUserProfile(session.user.id).catch(console.error);
+        } else {
+          setUser(null);
+          setUserProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      clearTimeout(fallbackTimeout);
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching profile:", error);
+        return;
       }
 
-      setIsLoading(false);
-    });
+      if (data) {
+        setUserProfile({
+          uid: data.id,
+          email: data.email,
+          displayName: data.display_name,
+          photoURL: data.photo_url,
+          role: data.role,
+        });
+      } else {
+        // Create profile if it doesn't exist
+        await createUserProfile(userId);
+      }
+    } catch (err) {
+      console.error("Error in fetchUserProfile:", err);
+    }
+  };
 
-    return () => unsubscribe();
-  }, []);
+  const createUserProfile = async (userId: string) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+
+      const newProfile = {
+        id: userId,
+        email: userData.user.email,
+        display_name: userData.user.user_metadata?.full_name || "User",
+        photo_url: userData.user.user_metadata?.avatar_url || null,
+        role: "customer",
+      };
+
+      const { error } = await supabase.from("profiles").insert(newProfile);
+
+      if (!error) {
+        setUserProfile({
+          uid: newProfile.id,
+          email: newProfile.email,
+          displayName: newProfile.display_name,
+          photoURL: newProfile.photo_url,
+          role: newProfile.role,
+        });
+      } else {
+        console.error("Error creating profile:", error);
+      }
+    } catch (err) {
+      console.error("Error in createUserProfile:", err);
+    }
+  };
 
   const loginWithGoogle = async () => {
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-
-      // Save/update user profile in Firestore
-      const userDocRef = doc(db, "users", result.user.uid);
-      const userProfile: UserProfile = {
-        uid: result.user.uid,
-        email: result.user.email || "",
-        displayName: result.user.displayName || "User",
-        photoURL: result.user.photoURL || undefined,
-      };
-
-      await setDoc(userDocRef, userProfile, { merge: true });
-      setIsAuthModalOpen(false);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+      });
+      if (error) throw error;
     } catch (error) {
       console.error("Google sign-in error:", error);
       throw error;
@@ -116,17 +190,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signUpWithEmail = async (email: string, password: string, displayName: string) => {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-
-      // Create user profile in Firestore
-      const userDocRef = doc(db, "users", result.user.uid);
-      const userProfile: UserProfile = {
-        uid: result.user.uid,
+      const { error } = await supabase.auth.signUp({
         email,
-        displayName,
-      };
-
-      await setDoc(userDocRef, userProfile);
+        password,
+        options: {
+          data: {
+            full_name: displayName,
+          },
+        },
+      });
+      if (error) throw error;
       setIsAuthModalOpen(false);
     } catch (error) {
       console.error("Sign-up error:", error);
@@ -136,7 +209,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loginWithEmail = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
       setIsAuthModalOpen(false);
     } catch (error) {
       console.error("Email login error:", error);
@@ -146,16 +223,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     try {
-      await signOut(auth);
-      setUserProfile(null);
+      console.log("Starting logout...");
+      
+      // Clear state immediately so UI updates instantly
       setUser(null);
-      // Reload page to clear all states
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 500);
+      setSession(null);
+      setUserProfile(null);
+
+      // Attempt to sign out from Supabase server
+      // We don't await this so the page can reload immediately
+      supabase.auth.signOut({ scope: 'local' }).catch(console.error);
+      
+      // Clear Supabase local storage just in case
+      for (const key in localStorage) {
+        if (key.startsWith('sb-')) {
+          localStorage.removeItem(key);
+        }
+      }
+
+      window.location.href = "/";
     } catch (error) {
-      console.error("Logout error:", error);
-      throw error;
+      console.error("Logout catch error:", error);
+      window.location.href = "/";
     }
   };
 
@@ -163,10 +252,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!user) throw new Error("No user logged in");
 
     try {
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(userDocRef, profile, { merge: true });
+      const updateData: any = {};
+      if (profile.displayName) updateData.display_name = profile.displayName;
+      if (profile.photoURL) updateData.photo_url = profile.photoURL;
+      if (profile.phone) updateData.phone = profile.phone;
+      if (profile.role) updateData.role = profile.role;
 
-      // Update local state
+      const { error } = await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("id", user.id);
+      
+      if (error) throw error;
+
       setUserProfile((prev) => (prev ? { ...prev, ...profile } : null));
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -176,8 +274,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const value: AuthContextType = {
     user,
+    session,
     userProfile,
     isLoading,
+    isInitialized,
     isAuthModalOpen,
     setIsAuthModalOpen,
     loginWithGoogle,
